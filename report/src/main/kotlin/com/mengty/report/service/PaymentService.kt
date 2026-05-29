@@ -184,7 +184,7 @@ class PaymentService(
                 status = payment.status,
                 bakongHash = payment.bakongHash,
                 responseCode = ex.statusCode.value(),
-                responseMessage = "Bakong check failed: ${ex.responseBodyAsString.ifBlank { ex.statusText }}",
+                responseMessage = "Bakong check failed with HTTP ${ex.statusCode.value()}. Check BAKONG_TOKEN and Bakong API access.",
                 expiresAt = payment.expiresAt.toUtcInstant()
             )
         } catch (ex: RestClientException) {

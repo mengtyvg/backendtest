@@ -791,9 +791,10 @@
           return;
         }
 
-        if (result.responseMessage && result.responseMessage !== "Success") {
+        if (Number(result.responseCode) >= 400) {
           console.warn("Bakong check response:", result.responseMessage);
           setBakongStatus(result.responseMessage.slice(0, 80), "error");
+          stopBakongPolling();
           return;
         }
 
