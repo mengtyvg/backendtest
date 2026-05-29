@@ -13,6 +13,7 @@ import kh.gov.nbc.bakong_khqr.model.KHQRCurrency
 import kh.gov.nbc.bakong_khqr.model.MerchantInfo
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -167,6 +168,9 @@ class PaymentService(
             restClient.post()
                 .uri("${bakongBaseUrl.trimEnd('/')}/v1/check_transaction_by_md5")
                 .header("Authorization", "Bearer $bakongToken")
+                .header("User-Agent", "MengtyPOS/1.0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(mapOf("md5" to payment.khqrMd5))
                 .retrieve()
                 .body(BakongTransactionResponse::class.java)
