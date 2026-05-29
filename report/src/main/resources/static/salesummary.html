@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.replace("/login.html");
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sale Summary Report - POS</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green: #16a34a;
+      --green-dark: #15803d;
+      --green-soft: #f0fdf4;
+      --red: #dc2626;
+      --red-soft: #fef2f2;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --radius: 6px;
+      --radius-lg: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 14px;
+    }
+
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+    }
+
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .sub {
+      margin-top: 2px;
+      color: var(--gray-400);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
+
+    .sidebar-section {
+      padding: 18px 12px 6px;
+      color: var(--gray-400);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 1px 8px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      color: var(--gray-600);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .sidebar-item.active {
+      border: 1px solid #dcfce7;
+      font-weight: 700;
+    }
+
+    .sidebar-item .icon {
+      width: 28px;
+      color: var(--gray-400);
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .sidebar-item.active .icon { color: var(--green); }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--green);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .user-info .name { color: var(--gray-800); font-size: 12px; font-weight: 600; }
+    .user-info .role { color: var(--gray-400); font-size: 11px; }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 54px;
+      flex-shrink: 0;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gray-400);
+      font-size: 13px;
+    }
+
+    .breadcrumb span {
+      color: var(--gray-700);
+      font-weight: 600;
+    }
+
+    .topbar-actions,
+    .header-actions,
+    .filters,
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-icon {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--gray-500);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+
+    .topbar-icon:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .content {
+      flex: 1;
+      overflow: auto;
+      padding: 24px 28px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      color: var(--gray-900);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .page-desc {
+      margin-top: 3px;
+      color: var(--gray-400);
+      font-size: 13px;
+    }
+
+    .btn {
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--green-dark); }
+
+    .btn-outline {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--gray-600);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .panel {
+      overflow: hidden;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .filter-bar {
+      padding: 16px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field {
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--gray-600);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .control {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      background: white;
+      color: var(--gray-800);
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .control:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.08);
+    }
+
+    .summary-shell {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .report-paper {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .report-head {
+      padding: 24px 28px 18px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-title {
+      color: var(--gray-900);
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .report-meta {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      text-align: left;
+    }
+
+    .meta-item {
+      padding: 10px 12px;
+      background: var(--gray-50);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .meta-label {
+      color: var(--gray-400);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .meta-value {
+      margin-top: 3px;
+      color: var(--gray-900);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .report-section {
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-section:last-child { border-bottom: none; }
+
+    .section-title {
+      margin-bottom: 12px;
+      color: var(--gray-900);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .range-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .range-card {
+      padding: 14px;
+      background: var(--gray-50);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .range-label {
+      color: var(--gray-500);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .range-value {
+      margin-top: 8px;
+      color: var(--gray-900);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 18px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 11px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+    }
+
+    .summary-table th {
+      color: var(--gray-500);
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .summary-table td {
+      color: var(--gray-900);
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .summary-table tr:last-child th,
+    .summary-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .summary-table .grand th,
+    .summary-table .grand td {
+      padding-top: 16px;
+      color: var(--green);
+      font-size: 17px;
+      font-weight: 800;
+      border-top: 2px solid var(--border);
+    }
+
+    .summary-table .muted td { color: var(--gray-500); }
+    .summary-table .danger td { color: var(--red); }
+
+    .state-line {
+      display: none;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .state-line.active { display: block; }
+    .state-line.error {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .table-footer {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--border);
+      background: var(--gray-50);
+      color: var(--gray-500);
+      font-size: 12px;
+    }
+
+    code {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1080px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; min-height: auto; }
+      .page-header { flex-direction: column; }
+      .report-meta,
+      .range-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .content { padding: 16px; }
+      .summary-shell { padding: 16px; }
+      .report-head,
+      .report-section { padding-left: 18px; padding-right: 18px; }
+      .field { min-width: 100%; }
+      .toolbar-right,
+      .toolbar-right .btn { width: 100%; }
+    }
+
+    @media print {
+      body { display: block; background: white; }
+      .sidebar,
+      .topbar,
+      .page-header,
+      .filter-bar,
+      .table-footer,
+      .state-line { display: none !important; }
+      .content,
+      .summary-shell { padding: 0; }
+      .panel,
+      .report-paper {
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">monakom</div>
+    <div class="sub">POS management</div>
+  </div>
+
+  <div class="sidebar-section">Operations</div>
+  <a class="sidebar-item" href="/sale.html"><span class="icon">POS</span><span>Sales</span></a>
+
+  <div class="sidebar-section">Master Data</div>
+  <a class="sidebar-item" href="/item.html"><span class="icon">PRD</span><span>Products</span></a>
+  <a class="sidebar-item" href="/category.html"><span class="icon">CAT</span><span>Categories</span></a>
+  <a class="sidebar-item" href="/payment-method.html"><span class="icon">PAY</span><span>Payment Methods</span></a>
+
+  <div class="sidebar-section">Analytics</div>
+  <a class="sidebar-item" href="/report.html"><span class="icon">RPT</span><span>Invoice Report</span></a>
+  <a class="sidebar-item active" href="/salesummary.html"><span class="icon">SUM</span><span>Sale Summary</span></a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">AD</div>
+    <div class="user-info">
+      <div class="name">Administrator</div>
+      <div class="role">System Access</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Analytics / <span>Sale Summary Report</span></div>
+    <div class="topbar-actions">
+      <button class="topbar-icon" type="button" onclick="window.location.href='/sale.html'">POS</button>
+      <button class="topbar-icon" type="button" onclick="logout()">OUT</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Sale Summary Report</div>
+        <div class="page-desc">Daily register totals, receipt range, discounts, refunds, voids, and completed order counts.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" type="button" onclick="setToday()">Today</button>
+        <button class="btn btn-outline" type="button" onclick="window.print()">Print</button>
+        <button class="btn btn-primary" type="button" onclick="loadSummary()">Run Summary</button>
+      </div>
+    </div>
+
+    <section class="panel">
+      <div class="filter-bar">
+        <div class="filters">
+          <div class="field">
+            <label for="startDate">Start Date</label>
+            <input class="control" type="date" id="startDate" />
+          </div>
+          <div class="field">
+            <label for="endDate">End Date</label>
+            <input class="control" type="date" id="endDate" />
+          </div>
+          <div class="field">
+            <label for="periodType">Period Type</label>
+            <select class="control" id="periodType">
+              <option value="Sale Period">Sale Period</option>
+              <option value="Post Date">Post Date</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="shift">Shift</label>
+            <select class="control" id="shift">
+              <option value="ALL">ALL</option>
+              <option value="MORNING">MORNING</option>
+              <option value="AFTERNOON">AFTERNOON</option>
+              <option value="EVENING">EVENING</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-outline" type="button" onclick="resetSummary()">Clear</button>
+          <button class="btn btn-primary" type="button" onclick="loadSummary()">Refresh</button>
+        </div>
+      </div>
+
+      <div id="stateLine" class="state-line"></div>
+
+      <div class="summary-shell">
+        <div class="report-paper">
+          <header class="report-head">
+            <div class="report-title">Sale Summary Report</div>
+            <div class="report-meta">
+              <div class="meta-item">
+                <div class="meta-label">Period</div>
+                <div class="meta-value" id="periodLabel">--</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">Period Type</div>
+                <div class="meta-value" id="periodTypeLabel">Sale Period</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">Shift</div>
+                <div class="meta-value" id="shiftLabel">ALL</div>
+              </div>
+            </div>
+          </header>
+
+          <section class="report-section">
+            <div class="section-title">Receipt Number Range</div>
+            <div class="range-grid">
+              <div class="range-card">
+                <div class="range-label">Start Number</div>
+                <div class="range-value" id="startNumber">-</div>
+              </div>
+              <div class="range-card">
+                <div class="range-label">End Number</div>
+                <div class="range-value" id="endNumber">-</div>
+              </div>
+              <div class="range-card">
+                <div class="range-label">Total Bill</div>
+                <div class="range-value" id="totalBill">0</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="report-section">
+            <div class="section-title">Transaction Summary</div>
+            <table class="summary-table">
+              <tbody>
+
+              <tr>
+                <th>Gross Sales</th>
+                <td id="grossSale">$0.00</td>
+              </tr>
+              <tr>
+                <th>Total</th>
+                <td id="totalAmount">$0.00</td>
+              </tr>
+              <tr class="danger">
+                <th>Discount Subtotal</th>
+                <td id="discountSubtotal">$0.00</td>
+              </tr>
+              <tr>
+                <th>Net Sales</th>
+                <td id="netSale">$0.00</td>
+              </tr>
+              <tr>
+                <th>Surcharge Subtotal</th>
+                <td id="servicechargeSubtotal">$0.00</td>
+              </tr>
+              <tr class="grand">
+                <th>Grand Total</th>
+                <td id="grandTotal">$0.00</td>
+              </tr>
+              <tr class="muted">
+                <th>Orders Complete</th>
+                <td id="ordersCompleted">0</td>
+              </tr>
+              <tr class="muted">
+                <th>Cancel Count</th>
+                <td id="cancelCount">0</td>
+              </tr>
+              <tr class="danger">
+                <th>Cancel Total</th>
+                <td id="cancelTotal">$0.00</td>
+              </tr>
+              <tr class="danger">
+                <th>Return Amount</th>
+                <td id="returnAmount">$0.00</td>
+              </tr>
+              <tr class="danger">
+                <th>Refund Total</th>
+                <td id="refundAmount">$0.00</td>
+              </tr>
+              <tr class="muted">
+                <th>Voided Orders</th>
+                <td id="voidedOrders">0</td>
+              </tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div>
+
+      <div class="table-footer">
+        <span id="updatedAt">Ready</span>
+        <span>Expected source - <code>/api/reports/sale-summary</code></span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const ZERO_SUMMARY = {
+    startNumber: "-",
+    endNumber: "-",
+    totalBill: 0,
+    total: 0,
+    grossSale: 0,
+    discountSubtotal: 0,
+    netSale: 0,
+    servicechargeSubtotal: 0,
+    grandTotal: 0,
+    ordersCompleted: 0,
+    cancelCount: 0,
+    cancelTotal: 0,
+    returnAmount: 0,
+    refundAmount: 0,
+    voidedOrders: 0
+  };
+
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "/login.html";
+  }
+
+  function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatDisplayDate(date) {
+    if (!date) return "--";
+    const [year, month, day] = date.split("-");
+    return `${month}/${day}/${year}`;
+  }
+
+  function formatCurrency(value) {
+    return `$ ${Number(value || 0).toFixed(2)}`;
+  }
+
+  function setState(message, type) {
+    const stateLine = document.getElementById("stateLine");
+    if (!message) {
+      stateLine.textContent = "";
+      stateLine.className = "state-line";
+      return;
+    }
+
+    stateLine.textContent = message;
+    stateLine.className = `state-line active ${type || ""}`;
+  }
+
+  function setToday() {
+    const today = getLocalDateString();
+    document.getElementById("startDate").value = today;
+    document.getElementById("endDate").value = today;
+    updateLabels();
+  }
+
+  function updateLabels() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const periodType = document.getElementById("periodType").value;
+    const shift = document.getElementById("shift").value;
+
+    document.getElementById("periodLabel").textContent = `${formatDisplayDate(startDate)}-${formatDisplayDate(endDate)}`;
+    document.getElementById("periodTypeLabel").textContent = periodType;
+    document.getElementById("shiftLabel").textContent = shift;
+  }
+
+  function renderSummary(summary) {
+    const data = { ...ZERO_SUMMARY, ...(summary || {}) };
+
+    document.getElementById("startNumber").textContent = data.startNumber || "-";
+    document.getElementById("endNumber").textContent = data.endNumber || "-";
+    document.getElementById("totalBill").textContent = Number(data.totalBill || 0);
+    document.getElementById("totalAmount").textContent = formatCurrency(data.total);
+    document.getElementById("grossSale").textContent = formatCurrency(data.grossSale);
+    document.getElementById("discountSubtotal").textContent = formatCurrency(data.discountSubtotal);
+    document.getElementById("netSale").textContent = formatCurrency(data.netSale);
+    document.getElementById("servicechargeSubtotal").textContent = formatCurrency(data.servicechargeSubtotal);
+    document.getElementById("grandTotal").textContent = formatCurrency(data.grandTotal);
+    document.getElementById("ordersCompleted").textContent = Number(data.ordersCompleted || 0);
+    document.getElementById("cancelCount").textContent = Number(data.cancelCount || 0);
+    document.getElementById("cancelTotal").textContent = formatCurrency(data.cancelTotal);
+    document.getElementById("returnAmount").textContent = formatCurrency(data.returnAmount);
+    document.getElementById("refundAmount").textContent = formatCurrency(data.refundAmount);
+    document.getElementById("voidedOrders").textContent = Number(data.voidedOrders || 0);
+  }
+
+  function resetSummary() {
+    renderSummary(ZERO_SUMMARY);
+    setState("");
+    document.getElementById("updatedAt").textContent = "Ready";
+    updateLabels();
+  }
+
+  function validateDates(startDate, endDate) {
+    if (!startDate || !endDate) return "Select both start date and end date.";
+    if (startDate > endDate) return "Start date cannot be after end date.";
+    return "";
+  }
+
+  async function loadSummary() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const periodType = document.getElementById("periodType").value;
+    const shift = document.getElementById("shift").value;
+    const validationError = validateDates(startDate, endDate);
+
+    updateLabels();
+    if (validationError) {
+      setState(validationError, "error");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      startDate,
+      endDate,
+      periodType,
+      shift
+    });
+
+    setState("Loading sale summary...");
+    document.getElementById("updatedAt").textContent = "Loading";
+
+    try {
+      const response = await fetch(`/api/reports/sale-summary?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      renderSummary(data);
+      setState("");
+      document.getElementById("updatedAt").textContent = `Updated ${new Date().toLocaleString()}`;
+    } catch (error) {
+      renderSummary(ZERO_SUMMARY);
+      setState(`Backend is not ready yet: ${error.message}. The frontend is waiting for /api/reports/sale-summary.`, "error");
+      document.getElementById("updatedAt").textContent = "Backend not connected";
+    }
+  }
+
+  ["startDate", "endDate", "periodType", "shift"].forEach(id => {
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById(id).addEventListener("change", updateLabels);
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setToday();
+    renderSummary(ZERO_SUMMARY);
+  });
+</script>
+</body>
+</html>

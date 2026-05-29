@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POS Sale</title>
+    <link rel="stylesheet" href="/css/sale.css" />
+</head>
+<body>
+<div class="topnav">
+    <div class="brand">monakom</div>
+    <nav>
+        <a class="active" id="salesNav" onclick="showSaleView()">Sales</a>
+        <a id="ordersNav" onclick="showOrdersView()">Orders</a>
+        <a>Tables</a>
+        <a>Customers</a>
+        <a href="/stock.html">Stock</a>
+        <a href="/payment-method.html">Payment Methods</a>
+        <a href="/payment-history.html">Payments</a>
+    </nav>
+    <div class="cashier">
+        <span>Cashier</span>
+    </div>
+</div>
+
+<div class="main">
+    <div class="menu">
+        <div class="category-tabs" id="categoryTabs"></div>
+        <div class="search-wrap">
+            <input id="search" placeholder="Search item..." oninput="renderItems()" />
+        </div>
+        <div class="item-grid" id="itemGrid"></div>
+    </div>
+
+    <div class="order-panel">
+        <div class="order-header">
+            <div class="label">Order Channel</div>
+            <div class="value">WALK-IN</div>
+            <span class="status-pill">In Progress</span>
+        </div>
+
+        <div class="order-col-header">
+            <span>Product</span>
+            <span>Price</span>
+            <span>Qty</span>
+            <span>Amount</span>
+        </div>
+
+        <div class="order-list" id="cartList"></div>
+
+        <div class="payment-section">
+            <div class="pay-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+            <div class="pay-row"><span>Discount</span><span>$0.00</span></div>
+            <div class="pay-row"><span>Remain</span><span id="remain">$0.00</span></div>
+            <div class="pay-total">
+                <span>Total</span>
+                <div style="text-align:right">
+                    <div>USD <span id="total">0.00</span></div>
+                    <div class="khr">KHR <span id="totalKhr">0</span></div>
+                </div>
+            </div>
+
+            <select class="payment-select" id="paymentMethod">
+                <option value="">Select Payment Method</option>
+            </select>
+            <div class="payment-method-buttons" id="paymentMethodButtons"></div>
+
+            <button class="btn-print-receipt" onclick="printReceipt()">Print Receipt</button>
+            <button class="btn-complete-sale" id="completeSaleBtn" onclick="completeSale()">Complete Sale</button>
+
+            <div class="shift-info" id="shiftInfo"></div>
+        </div>
+    </div>
+</div>
+
+<div class="orders-page" id="ordersPage">
+    <div class="orders-header">
+        <div>
+            <div class="orders-title">Orders</div>
+            <div class="orders-subtitle">Today&apos;s completed and voided invoices will show here.</div>
+        </div>
+        <div class="orders-toolbar">
+            <label for="invoiceLimit">Show</label>
+            <select id="invoiceLimit">
+                <option value="10">10 invoices</option>
+                <option value="25">25 invoices</option>
+                <option value="100">100 invoices</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="orders-card">
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>Invoice No</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th style="text-align:right;">Total</th>
+            </tr>
+            </thead>
+            <tbody id="ordersBody">
+            <tr>
+                <td colspan="4" class="orders-empty">Order API is not connected yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="orderDetailModal" onclick="handleOrderDetailBackdropClick(event)">
+    <div class="sale-modal" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
+        <div class="sale-modal-header">
+            <div class="sale-modal-title-wrap">
+                <div class="sale-success-mark">INV</div>
+                <div>
+                    <div class="sale-modal-title" id="orderDetailTitle">Order detail</div>
+                    <div class="sale-modal-subtitle" id="orderDetailSubtitle">-</div>
+                </div>
+            </div>
+            <button class="modal-close" type="button" onclick="closeOrderDetailModal()" aria-label="Close">x</button>
+        </div>
+        <div class="sale-modal-body">
+            <div class="sale-summary-grid">
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Invoice No</div>
+                    <div class="sale-summary-value" id="detailInvoiceNo">-</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Total</div>
+                    <div class="sale-summary-value total" id="detailTotal">$0.00</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Status</div>
+                    <div class="sale-summary-value" id="detailStatus">-</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Items</div>
+                    <div class="sale-summary-value" id="detailItemCount">0</div>
+                </div>
+            </div>
+
+            <div class="void-detail-panel" id="voidDetailPanel">
+                <div class="completed-items-title">Void Details</div>
+                <div class="void-detail-grid">
+                    <div class="void-detail-item wide">
+                        <div class="sale-summary-label">Reason</div>
+                        <div class="void-detail-value" id="detailVoidReason">-</div>
+                    </div>
+                    <div class="void-detail-item">
+                        <div class="sale-summary-label">Voided By</div>
+                        <div class="void-detail-value" id="detailVoidedBy">-</div>
+                    </div>
+                    <div class="void-detail-item">
+                        <div class="sale-summary-label">Voided At</div>
+                        <div class="void-detail-value" id="detailVoidedAt">-</div>
+                    </div>
+                    <div class="void-detail-item">
+                        <div class="sale-summary-label">Refund Amount</div>
+                        <div class="void-detail-value amount" id="detailRefundAmount">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="completed-items-title">Sold Items</div>
+            <div class="completed-items" id="detailItems"></div>
+        </div>
+        <div class="sale-modal-footer">
+            <button class="modal-btn danger" id="voidInvoiceBtn" type="button" onclick="voidCurrentInvoice()">Void Invoice</button>
+            <button class="modal-btn primary" type="button" onclick="closeOrderDetailModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="voidInvoiceModal" onclick="handleVoidModalBackdropClick(event)">
+    <div class="sale-modal void-modal" role="dialog" aria-modal="true" aria-labelledby="voidInvoiceTitle">
+        <div class="sale-modal-header">
+            <div class="sale-modal-title-wrap">
+                <div class="sale-success-mark danger-mark">!</div>
+                <div>
+                    <div class="sale-modal-title" id="voidInvoiceTitle">Void invoice</div>
+                    <div class="sale-modal-subtitle" id="voidInvoiceSubtitle">This invoice will be removed from completed sales totals.</div>
+                </div>
+            </div>
+            <button class="modal-close" type="button" onclick="closeVoidInvoiceModal()" aria-label="Close">x</button>
+        </div>
+        <div class="sale-modal-body">
+            <div class="void-summary">
+                <div>
+                    <div class="sale-summary-label">Invoice No</div>
+                    <div class="void-summary-value" id="voidInvoiceNo">-</div>
+                </div>
+                <div>
+                    <div class="sale-summary-label">Refund Amount</div>
+                    <div class="void-summary-value amount" id="voidRefundAmount">$0.00</div>
+                </div>
+            </div>
+
+            <label class="void-label" for="voidReason">Void reason</label>
+            <textarea id="voidReason" class="void-textarea" rows="4" maxlength="240" placeholder="Example: customer changed order, wrong item selected, duplicate invoice"></textarea>
+            <div class="void-helper">
+                <span id="voidReasonError"></span>
+                <span id="voidReasonCount">0/240</span>
+            </div>
+        </div>
+        <div class="sale-modal-footer">
+            <button class="modal-btn" type="button" onclick="closeVoidInvoiceModal()">Cancel</button>
+            <button class="modal-btn danger" id="confirmVoidInvoiceBtn" type="button" onclick="confirmVoidInvoice()">Void Invoice</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="saleCompleteModal" onclick="handleModalBackdropClick(event)">
+    <div class="sale-modal" role="dialog" aria-modal="true" aria-labelledby="saleCompleteTitle">
+        <div class="sale-modal-header">
+            <div class="sale-modal-title-wrap">
+                <div class="sale-success-mark">OK</div>
+                <div>
+                    <div class="sale-modal-title" id="saleCompleteTitle">Sale completed</div>
+                    <div class="sale-modal-subtitle" id="completedAt">-</div>
+                </div>
+            </div>
+            <button class="modal-close" type="button" onclick="closeSaleCompleteModal()" aria-label="Close">x</button>
+        </div>
+        <div class="sale-modal-body">
+            <div class="sale-summary-grid">
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Invoice No</div>
+                    <div class="sale-summary-value" id="completedInvoiceNo">-</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Total</div>
+                    <div class="sale-summary-value total" id="completedTotal">$0.00</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Payment</div>
+                    <div class="sale-summary-value" id="completedPayment">-</div>
+                </div>
+                <div class="sale-summary-cell">
+                    <div class="sale-summary-label">Items</div>
+                    <div class="sale-summary-value" id="completedItemCount">0</div>
+                </div>
+            </div>
+
+            <div class="completed-items-title">Sold Items</div>
+            <div class="completed-items" id="completedItems"></div>
+        </div>
+        <div class="sale-modal-footer">
+            <button class="modal-btn" type="button" onclick="closeSaleCompleteModal()">New Sale</button>
+            <button class="modal-btn primary" type="button" onclick="printReceipt()">Print Receipt</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="bakongPaymentModal" onclick="handleBakongBackdropClick(event)">
+    <div class="sale-modal bakong-modal" role="dialog" aria-modal="true" aria-labelledby="bakongPaymentTitle">
+        <div class="bakong-card-head">
+            <div class="bakong-brand-row">
+                <div class="bakong-brand">
+                    <span class="bakong-logo">KHQR</span>
+                    <span>Bakong</span>
+                </div>
+                <button class="modal-close bakong-close" type="button" onclick="closeBakongPaymentModal()" aria-label="Close">x</button>
+            </div>
+            <div class="bakong-merchant">Mengty Sovann</div>
+            <div class="bakong-amount" id="bakongPaymentAmount">$0.00</div>
+        </div>
+        <div class="sale-modal-header bakong-status-header">
+            <div class="sale-modal-title-wrap">
+                <div>
+                    <div class="sale-modal-title" id="bakongPaymentTitle">Bakong payment</div>
+                    <div class="sale-modal-subtitle" id="bakongPaymentSubtitle">Waiting for QR payment</div>
+                </div>
+            </div>
+            <div class="bakong-status" id="bakongPaymentStatus">Pending</div>
+        </div>
+        <div class="sale-modal-body">
+            <div class="bakong-qr-wrap">
+                <img id="bakongQrImage" class="bakong-qr-image" alt="Bakong payment QR">
+            </div>
+            <div class="bakong-scan-label">Scan with Bakong or any KHQR-supported banking app</div>
+            <div class="bakong-reference" id="bakongPaymentReference">Payment reference -</div>
+            <div class="bakong-expiry" id="bakongPaymentExpiry">Expires in --:--</div>
+        </div>
+        <div class="sale-modal-footer">
+            <button class="modal-btn" type="button" onclick="closeBakongPaymentModal()">Cancel</button>
+            <button class="modal-btn primary" type="button" onclick="checkBakongPaymentNow()">Check Now</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/js/sale.js"></script>
+</body>
+</html>

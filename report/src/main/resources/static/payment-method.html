@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.replace("/login.html");
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Methods - POS</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #dc2626;
+      --red-dark: #b91c1c;
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --green: #16a34a;
+      --green-dark: #15803d;
+      --green-soft: #f0fdf4;
+      --green-mid: #dcfce7;
+      --sidebar: #ffffff;
+      --border: #e2e8f0;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "IBM Plex Sans", sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-height: 100vh;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    .sidebar-logo .sub {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+
+    .sidebar-section {
+      padding: 18px 12px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      margin: 1px 8px;
+      border-radius: var(--radius);
+      color: var(--gray-600);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .sidebar-item:hover { background: var(--green-soft); color: var(--green); }
+    .sidebar-item.active {
+      background: var(--green-soft);
+      border: 1px solid var(--green-mid);
+      color: var(--green);
+      font-weight: 700;
+    }
+    .sidebar-item .icon { width: 28px; text-align: center; font-size: 10px; font-weight: 700; color: var(--gray-400); }
+    .sidebar-item.active .icon { color: var(--green); }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .user-info .name { font-size: 12px; font-weight: 600; color: var(--gray-800); }
+    .user-info .role { font-size: 11px; color: var(--gray-400); }
+
+    .com.mengty.report.main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .breadcrumb { font-size: 13px; color: var(--gray-400); }
+    .breadcrumb span { color: var(--gray-700); font-weight: 600; }
+
+    .content { padding: 24px 28px; flex: 1; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .page-title { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+    .page-desc { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--gray-700);
+      height: 36px;
+      padding: 0 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: var(--green); color: var(--green); }
+    .btn-primary { background: var(--green); border-color: var(--green); color: white; }
+    .btn-primary:hover { background: var(--green-dark); border-color: var(--green-dark); color: white; }
+    .btn-green { background: var(--green); border-color: var(--green); color: white; }
+    .btn-green:hover { background: #15803d; border-color: #15803d; color: white; }
+
+    .table-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      font-size: 11px;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--gray-700);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status.active { background: var(--green-soft); color: #166534; }
+    .status.inactive { background: #fee2e2; color: #991b1b; }
+    .actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .empty { padding: 36px 16px; text-align: center; color: var(--gray-500); font-size: 13px; }
+
+    .toast-container {
+      position: fixed;
+      top: 62px;
+      right: 18px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 280px;
+      max-width: 380px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--green);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+      padding: 12px 14px;
+      pointer-events: all;
+      animation: toastIn 0.2s ease;
+    }
+
+    .toast.error { border-left-color: var(--red); }
+    .toast-title { font-size: 13px; font-weight: 800; color: var(--gray-900); }
+    .toast-message { margin-top: 2px; font-size: 12px; color: var(--gray-500); }
+    .toast.removing { animation: toastOut 0.18s ease forwards; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(12px); }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">monakom</div>
+    <div class="sub">POS management</div>
+  </div>
+
+  <div class="sidebar-section">Operations</div>
+  <a class="sidebar-item" href="/sale.html"><span class="icon">POS</span><span>Sales</span></a>
+
+  <div class="sidebar-section">Master Data</div>
+  <a class="sidebar-item" href="/item.html"><span class="icon">PRD</span><span>Products</span></a>
+  <a class="sidebar-item" href="/category.html"><span class="icon">CAT</span><span>Categories</span></a>
+  <a class="sidebar-item" href="/stock.html"><span class="icon">STK</span><span>Stock Movement</span></a>
+  <a class="sidebar-item active" href="/payment-method.html"><span class="icon">PAY</span><span>Payment Methods</span></a>
+
+  <div class="sidebar-section">Analytics</div>
+  <a class="sidebar-item" href="/report.html"><span class="icon">RPT</span><span>Reports</span></a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">AD</div>
+    <div class="user-info">
+      <div class="name">Administrator</div>
+      <div class="role">System Access</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Home / Master Data / <span>Payment Methods</span></div>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Payment Methods</div>
+        <div class="page-desc">Control which payment methods are available on the sale screen</div>
+      </div>
+      <button class="btn btn-primary" onclick="loadPaymentMethods()">Refresh</button>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+        <tr>
+          <th>Payment Method</th>
+          <th>Status</th>
+          <th style="text-align:right;">Action</th>
+        </tr>
+        </thead>
+        <tbody id="paymentBody">
+        <tr><td colspan="3" class="empty">Loading payment methods...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+  let paymentMethods = [];
+
+  function showToast(type, title, message) {
+    const container = document.getElementById("toastContainer");
+    const el = document.createElement("div");
+    el.className = `toast ${type || "info"}`;
+    el.innerHTML = `
+      <div class="toast-title">${title || "Notice"}</div>
+      ${message ? `<div class="toast-message">${message}</div>` : ""}
+    `;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add("removing");
+      el.addEventListener("animationend", () => el.remove(), { once: true });
+    }, type === "error" ? 4200 : 3000);
+  }
+
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "/login.html";
+  }
+
+  async function loadPaymentMethods() {
+    const tbody = document.getElementById("paymentBody");
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">Loading payment methods...</td></tr>`;
+
+    try {
+      const res = await fetch("/api/sale/payment-methods/all");
+      if (!res.ok) {
+        throw new Error("Unable to load payment methods");
+      }
+
+      paymentMethods = await res.json();
+      renderPaymentMethods();
+      showToast("success", "Payment Methods Refreshed", `${paymentMethods.length} payment method(s) loaded.`);
+    } catch (error) {
+      console.error(error);
+      tbody.innerHTML = `<tr><td colspan="3" class="empty">${error.message}</td></tr>`;
+      showToast("error", "Payment Methods Failed", error.message || "Unable to load payment methods.");
+    }
+  }
+
+  function renderPaymentMethods() {
+    const tbody = document.getElementById("paymentBody");
+
+    tbody.innerHTML = paymentMethods.map(method => {
+      const active = method.status === true;
+      return `
+        <tr>
+          <td>${method.paymentSubtype || "-"}</td>
+          <td><span class="status ${active ? "active" : "inactive"}">${active ? "Active" : "Inactive"}</span></td>
+          <td>
+            <div class="actions">
+              <button class="btn ${active ? "" : "btn-green"}" onclick="setPaymentStatus('${method.id}', ${!active})">
+                ${active ? "Deactivate" : "Activate"}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="3" class="empty">No payment methods found</td></tr>`;
+  }
+
+  async function setPaymentStatus(id, status) {
+    try {
+      const res = await fetch(`/api/sale/payment-methods/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+
+      if (!res.ok) {
+        let message = "Unable to update payment method";
+        try {
+          const errorBody = await res.json();
+          message = errorBody.detail || errorBody.message || message;
+        } catch (_) {
+          message = await res.text() || message;
+        }
+        throw new Error(message);
+      }
+
+      await loadPaymentMethods();
+      showToast("success", "Payment Method Updated", `Payment method is now ${status ? "active" : "inactive"}.`);
+    } catch (error) {
+      console.error(error);
+      showToast("error", "Update Failed", error.message || "Unable to update payment method");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadPaymentMethods);
+</script>
+</body>
+</html>

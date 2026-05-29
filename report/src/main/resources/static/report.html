@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.replace("/login.html");
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Report - POS</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #dc2626;
+      --red-dark: #b91c1c;
+      --red-soft: #fef2f2;
+      --blue: var(--green);
+      --blue-dark: #15803d;
+      --blue-soft: var(--green-soft);
+      --green: #16a34a;
+      --green-soft: #f0fdf4;
+      --amber-soft: #fffbeb;
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --sidebar: #ffffff;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --radius: 6px;
+      --radius-lg: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "IBM Plex Sans", sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-height: 100vh;
+    }
+
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    .sidebar-logo .sub {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 2px;
+      letter-spacing: 0.06em;
+    }
+
+    .sidebar-section {
+      padding: 18px 12px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      margin: 1px 8px;
+      border-radius: var(--radius);
+      color: var(--gray-600);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .sidebar-item:hover { background: var(--green-soft); color: var(--green); }
+    .sidebar-item.active {
+      background: var(--green-soft);
+      border: 1px solid #dcfce7;
+      color: var(--green);
+      font-weight: 700;
+    }
+    .sidebar-item .icon {
+      width: 28px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gray-400);
+    }
+    .sidebar-item.active .icon { color: var(--green); }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-info .name { font-size: 12px; font-weight: 600; color: var(--gray-800); }
+    .user-info .role { font-size: 11px; color: var(--gray-400); }
+
+    .com.mengty.report.main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .breadcrumb span { color: var(--gray-700); font-weight: 600; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    .topbar-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-500);
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .topbar-icon:hover { border-color: var(--blue); color: var(--blue); }
+
+    .content { padding: 24px 28px; flex: 1; overflow: auto; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .page-title { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+    .page-desc { font-size: 13px; color: var(--gray-400); margin-top: 3px; }
+
+    .header-actions,
+    .filters,
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: var(--blue-dark); }
+
+    .btn-outline {
+      background: white;
+      color: var(--gray-600);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.blue { background: var(--blue-soft); }
+    .stat-icon.green { background: var(--green-soft); }
+    .stat-icon.red { background: var(--red-soft); }
+    .stat-icon.amber { background: var(--amber-soft); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--gray-400);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-top: 1px;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .filter-bar {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--gray-50);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+
+    .control {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 13px;
+      background: white;
+      color: var(--gray-800);
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .control:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.08); }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--gray-50); border-bottom: 1px solid var(--border); }
+
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover { background: var(--gray-50); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .mono {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      color: var(--gray-600);
+    }
+
+    .amount {
+      text-align: right;
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--green-soft);
+      color: var(--green);
+      text-transform: capitalize;
+    }
+
+    .status-badge.pending {
+      background: var(--amber-soft);
+      color: #b45309;
+    }
+
+    .status-badge.cancelled {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .status-badge.voided {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .voided-row {
+      background: #fff7ed;
+    }
+
+    .void-reason {
+      margin-top: 5px;
+      color: var(--red);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .loader,
+    .empty-state {
+      text-align: center;
+      padding: 44px 24px;
+      color: var(--gray-400);
+    }
+
+    .loader { display: none; }
+    .loader.active { display: block; }
+
+    .empty-title {
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+
+    .empty-sub { font-size: 12px; }
+
+    tfoot td {
+      padding: 14px 16px;
+      background: var(--gray-50);
+      font-weight: 700;
+      border-top: 1px solid var(--border);
+    }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--gray-50);
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 62px;
+      right: 18px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 280px;
+      max-width: 380px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--green);
+      border-radius: var(--radius-lg);
+      background: white;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+      padding: 12px 14px;
+      pointer-events: all;
+      animation: toastIn 0.2s ease;
+    }
+
+    .toast.error { border-left-color: var(--red); }
+    .toast.warning { border-left-color: #d97706; }
+    .toast-title { font-size: 13px; font-weight: 800; color: var(--gray-900); }
+    .toast-message { margin-top: 2px; font-size: 12px; color: var(--gray-500); }
+    .toast.removing { animation: toastOut 0.18s ease forwards; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(12px); }
+    }
+
+    @media (max-width: 1080px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; min-height: auto; }
+      .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .page-header { flex-direction: column; }
+    }
+
+    @media (max-width: 640px) {
+      .stats-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">monakom</div>
+    <div class="sub">POS management</div>
+  </div>
+
+  <div class="sidebar-section">Operations</div>
+  <a class="sidebar-item" href="/sale.html"><span class="icon">POS</span><span>Sales</span></a>
+
+  <div class="sidebar-section">Master Data</div>
+  <a class="sidebar-item" href="/item.html"><span class="icon">PRD</span><span>Products</span></a>
+  <a class="sidebar-item" href="/category.html"><span class="icon">CAT</span><span>Categories</span></a>
+  <a class="sidebar-item" href="/stock.html"><span class="icon">STK</span><span>Stock Movement</span></a>
+  <a class="sidebar-item" href="/payment-method.html"><span class="icon">PAY</span><span>Payment Methods</span></a>
+
+  <div class="sidebar-section">Analytics</div>
+  <a class="sidebar-item active" href="/report.html"><span class="icon">RPT</span><span>Invoice Report</span></a>
+  <a class="sidebar-item" href="/salesummary.html"><span class="icon">SUM</span><span>Sale Summary</span></a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">AD</div>
+    <div class="user-info">
+      <div class="name">Administrator</div>
+      <div class="role">System Access</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">Analytics / <span>POS Invoice Report</span></div>
+    <div class="topbar-actions">
+      <button class="topbar-icon" type="button" onclick="window.location.href='/sale.html'">POS</button>
+      <button class="topbar-icon" type="button" onclick="logout()">OUT</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">POS Invoice Report</div>
+        <div class="page-desc">Daily invoice visibility with the same admin shell and table language as product management.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" type="button" onclick="setToday()">Today</button>
+        <button class="btn btn-primary" type="button" onclick="getReport()">Refresh Report</button>
+      </div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-icon blue">IV</div>
+        <div>
+          <div class="stat-label">Invoices</div>
+          <div class="stat-value" id="statCount">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">$</div>
+        <div>
+          <div class="stat-label">Gross Total</div>
+          <div class="stat-value" id="statTotal">$0.00</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">AV</div>
+        <div>
+          <div class="stat-label">Average Ticket</div>
+          <div class="stat-value" id="statAverage">$0.00</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">TM</div>
+        <div>
+          <div class="stat-label">Selected Date</div>
+          <div class="stat-value" id="statDate">--</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel">
+      <div class="filter-bar">
+        <div class="filters">
+          <div class="field">
+            <label for="reportDate">Report Date</label>
+            <input class="control" type="date" id="reportDate" />
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-outline" type="button" onclick="clearReport()">Clear</button>
+          <button class="btn btn-primary" type="button" onclick="getReport()">Run Report</button>
+        </div>
+      </div>
+
+      <div id="loader" class="loader">Loading report data...</div>
+
+      <table id="reportTable">
+        <thead>
+        <tr>
+          <th>Invoice No</th>
+          <th>Status</th>
+          <th>Void Reason</th>
+          <th class="amount">Sub Total</th>
+          <th>Date Created</th>
+        </tr>
+        </thead>
+        <tbody id="reportBody"></tbody>
+        <tfoot>
+        <tr>
+          <td colspan="3">Total Amount</td>
+          <td class="amount" id="totalAmount">$0.00</td>
+          <td class="mono" id="footerDate">--</td>
+        </tr>
+        </tfoot>
+      </table>
+
+      <div class="table-footer">
+        <span id="tableCount">0 invoice(s)</span>
+        <span>Report Source - <code>/api/reports</code></span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+  function showToast(type, title, message) {
+    const container = document.getElementById("toastContainer");
+    const el = document.createElement("div");
+    el.className = `toast ${type || "info"}`;
+    el.innerHTML = `
+      <div class="toast-title">${title || "Notice"}</div>
+      ${message ? `<div class="toast-message">${message}</div>` : ""}
+    `;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add("removing");
+      el.addEventListener("animationend", () => el.remove(), { once: true });
+    }, type === "error" ? 4200 : 3000);
+  }
+
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "/login.html";
+  }
+
+  function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function setToday() {
+    const today = getLocalDateString();
+    document.getElementById("reportDate").value = today;
+    document.getElementById("statDate").textContent = today;
+    document.getElementById("footerDate").textContent = today;
+  }
+
+  function clearReport() {
+    document.getElementById("reportBody").innerHTML = "";
+    document.getElementById("totalAmount").textContent = "$0.00";
+    document.getElementById("tableCount").textContent = "0 invoice(s)";
+    document.getElementById("statCount").textContent = "0";
+    document.getElementById("statTotal").textContent = "$0.00";
+    document.getElementById("statAverage").textContent = "$0.00";
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizeStatus(status) {
+    const value = (status || "unknown").toLowerCase();
+    if (value.includes("void")) return "voided";
+    if (value.includes("cancel")) return "cancelled";
+    if (value.includes("pending")) return "pending";
+    return "success";
+  }
+
+  function renderEmpty(message, detail) {
+    document.getElementById("reportBody").innerHTML = `
+      <tr>
+        <td colspan="5">
+          <div class="empty-state">
+            <div class="empty-title">${message}</div>
+            <div class="empty-sub">${detail}</div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function updateStats(data, selectedDate) {
+    const totalAmount = Number(data.totalAmount || 0);
+    const totalCount = Number(data.totalCount || 0);
+    const average = totalCount ? totalAmount / totalCount : 0;
+
+    document.getElementById("statCount").textContent = totalCount;
+    document.getElementById("statTotal").textContent = `$${totalAmount.toFixed(2)}`;
+    document.getElementById("statAverage").textContent = `$${average.toFixed(2)}`;
+    document.getElementById("statDate").textContent = selectedDate;
+    document.getElementById("footerDate").textContent = selectedDate;
+    document.getElementById("tableCount").textContent = `${totalCount} invoice(s)`;
+    document.getElementById("totalAmount").textContent = `$${totalAmount.toFixed(2)}`;
+  }
+
+  async function getReport() {
+    const date = document.getElementById("reportDate").value;
+    const loader = document.getElementById("loader");
+    const table = document.getElementById("reportTable");
+
+    if (!date) {
+      renderEmpty("Select a report date", "The report endpoint requires a concrete date in YYYY-MM-DD format.");
+      showToast("warning", "Date Required", "Select a report date before running the report.");
+      return;
+    }
+
+    loader.classList.add("active");
+    table.style.display = "none";
+
+    try {
+      const response = await fetch(`/api/reports?date=${encodeURIComponent(date)}`);
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      const invoices = Array.isArray(data.invoices) ? data.invoices : [];
+
+      updateStats(data, date);
+
+      if (!invoices.length) {
+        table.style.display = "";
+        renderEmpty("No invoices for this date", "Try another day or confirm sales were completed on the selected date.");
+        showToast("info", "No Invoices", "No invoices were found for the selected date.");
+        return;
+      }
+
+      document.getElementById("reportBody").innerHTML = invoices.map(inv => {
+        const statusClass = normalizeStatus(inv.posOrderStatus);
+        const isVoided = statusClass === "voided";
+        const voidReason = inv.voidReason || "-";
+        return `
+          <tr class="${isVoided ? "voided-row" : ""}">
+            <td class="mono">${escapeHtml(inv.series || "-")}</td>
+            <td>
+              <span class="status-badge ${statusClass}">
+                <span class="status-dot"></span>${escapeHtml(inv.posOrderStatus || "Unknown")}
+              </span>
+            </td>
+            <td>${isVoided ? `<div class="void-reason">${escapeHtml(voidReason)}</div>` : "-"}</td>
+            <td class="amount">$${Number(inv.subTotal || 0).toFixed(2)}</td>
+            <td>${escapeHtml(String(inv.dateCreated || "").replace("T", " "))}</td>
+          </tr>
+        `;
+      }).join("");
+
+      table.style.display = "";
+      showToast("success", "Report Loaded", `${invoices.length} invoice(s) loaded.`);
+    } catch (error) {
+      table.style.display = "";
+      clearReport();
+      renderEmpty("Unable to load report", error.message || "Check the API connection and try again.");
+      showToast("error", "Report Failed", error.message || "Unable to load report.");
+    } finally {
+      loader.classList.remove("active");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setToday();
+    getReport();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invoice List</title>
+</head>
+<body>
+
+<h2>Invoice List</h2>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>Series</th>
+      <th>Status</th>
+      <th>Total</th>
+      <th>Qty</th>
+      <th>Post Date</th>
+      <th>Date Created</th>
+      <th>TTL</th>
+    </tr>
+  </thead>
+  <tbody id="invoiceTable"></tbody>
+</table>
+
+<script>
+  const API_URL = "http://localhost:8081/api/sale/orders/today";
+
+  async function loadInvoices() {
+    try {
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+
+      const invoices = await response.json();
+
+      const tbody = document.getElementById("invoiceTable");
+      tbody.innerHTML = "";
+
+      invoices.forEach(invoice => {
+        const row = `
+          <tr>
+            <td>${invoice.series}</td>
+            <td>${invoice.posOrderStatus}</td>
+            <td>$${invoice.total}</td>
+            <td>${invoice.totalQty}</td>
+            <td>${invoice.postDate}</td>
+            <td>${invoice.dateCreated}</td>
+            <td>${invoice.total}</td>
+          </tr>
+        `;
+
+        tbody.innerHTML += row;
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Cannot load invoice data");
+    }
+  }
+
+  loadInvoices();
+</script>
+
+</body>
+</html>
