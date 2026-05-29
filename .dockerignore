@@ -1,0 +1,8 @@
+.git
+.gitignore
+.idea
+**/.idea
+**/.gradle
+**/build
+**/*.log
+**/*.pid
