@@ -791,6 +791,12 @@
           return;
         }
 
+        if (result.responseMessage && result.responseMessage !== "Success") {
+          console.warn("Bakong check response:", result.responseMessage);
+          setBakongStatus(result.responseMessage.slice(0, 80), "error");
+          return;
+        }
+
         setBakongStatus("Pending", "");
       } catch (error) {
         console.error(error);

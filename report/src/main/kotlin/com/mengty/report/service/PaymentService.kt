@@ -15,10 +15,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientException
+import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal;
 import java.math.RoundingMode
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Service
 class PaymentService(
@@ -94,7 +98,7 @@ class PaymentService(
                 khqr = saved.khqr,
                 md5 = saved.khqrMd5,
                 status = saved.status,
-                expiresAt = saved.expiresAt
+                expiresAt = saved.expiresAt.toUtcInstant()
         )
     }
 
@@ -106,7 +110,7 @@ class PaymentService(
                 paymentId = payment.id!!,
                 status = payment.status,
                 bakongHash = payment.bakongHash,
-                expiresAt = payment.expiresAt
+                expiresAt = payment.expiresAt.toUtcInstant()
         )
     }
 
@@ -121,7 +125,7 @@ class PaymentService(
                     status = payment.status,
                     bakongHash = payment.bakongHash,
                     createdAt = payment.createdAt,
-                    expiresAt = payment.expiresAt,
+                    expiresAt = payment.expiresAt.toUtcInstant(),
                     paidAt = payment.paidAt
                 )
             }
@@ -140,7 +144,7 @@ class PaymentService(
                 bakongHash = payment.bakongHash,
                 responseCode = 0,
                 responseMessage = "Already paid",
-                expiresAt = payment.expiresAt
+                expiresAt = payment.expiresAt.toUtcInstant()
             )
         }
 
@@ -155,17 +159,44 @@ class PaymentService(
                 bakongHash = payment.bakongHash,
                 responseCode = 2,
                 responseMessage = "Payment QR has expired.",
-                expiresAt = payment.expiresAt
+                expiresAt = payment.expiresAt.toUtcInstant()
             )
         }
 
-        val response = restClient.post()
-            .uri("${bakongBaseUrl.trimEnd('/')}/v1/check_transaction_by_md5")
-            .header("Authorization", "Bearer $bakongToken")
-            .body(mapOf("md5" to payment.khqrMd5))
-            .retrieve()
-            .body(BakongTransactionResponse::class.java)
-            ?: throw ResponseStatusException(HttpStatus.BAD_GATEWAY, "Empty response from Bakong.")
+        val response = try {
+            restClient.post()
+                .uri("${bakongBaseUrl.trimEnd('/')}/v1/check_transaction_by_md5")
+                .header("Authorization", "Bearer $bakongToken")
+                .body(mapOf("md5" to payment.khqrMd5))
+                .retrieve()
+                .body(BakongTransactionResponse::class.java)
+                ?: return BakongCheckResponse(
+                    paymentId = payment.id!!,
+                    status = payment.status,
+                    bakongHash = payment.bakongHash,
+                    responseCode = null,
+                    responseMessage = "Empty response from Bakong.",
+                    expiresAt = payment.expiresAt.toUtcInstant()
+                )
+        } catch (ex: RestClientResponseException) {
+            return BakongCheckResponse(
+                paymentId = payment.id!!,
+                status = payment.status,
+                bakongHash = payment.bakongHash,
+                responseCode = ex.statusCode.value(),
+                responseMessage = "Bakong check failed: ${ex.responseBodyAsString.ifBlank { ex.statusText }}",
+                expiresAt = payment.expiresAt.toUtcInstant()
+            )
+        } catch (ex: RestClientException) {
+            return BakongCheckResponse(
+                paymentId = payment.id!!,
+                status = payment.status,
+                bakongHash = payment.bakongHash,
+                responseCode = null,
+                responseMessage = "Bakong check failed: ${ex.message ?: "Unable to reach Bakong."}",
+                expiresAt = payment.expiresAt.toUtcInstant()
+            )
+        }
 
         if (response.responseCode == 0 && response.data?.hash != null) {
             payment.status = "PAID"
@@ -180,9 +211,12 @@ class PaymentService(
             bakongHash = payment.bakongHash,
             responseCode = response.responseCode,
             responseMessage = response.responseMessage,
-            expiresAt = payment.expiresAt
+            expiresAt = payment.expiresAt.toUtcInstant()
         )
     }
+
+    private fun LocalDateTime.toUtcInstant(): Instant =
+        atZone(ZoneOffset.UTC).toInstant()
 
     private fun generateKhqr(
         amount: BigDecimal,

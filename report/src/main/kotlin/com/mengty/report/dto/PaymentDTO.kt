@@ -2,6 +2,7 @@ package com.mengty.report.dto
 
 import java.util.UUID
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDateTime
 
 data class CreatePaymentRequest(
@@ -21,14 +22,14 @@ data class CreatePaymentResponse(
     val khqr: String,
     val md5: String,
     val status: String,
-    val expiresAt: LocalDateTime
+    val expiresAt: Instant
 )
 
 data class PaymentStatusResponse(
     val paymentId: Long,
     val status: String,
     val bakongHash: String? = null,
-    val expiresAt: LocalDateTime? = null
+    val expiresAt: Instant? = null
 )
 
 data class BakongCheckResponse(
@@ -37,7 +38,7 @@ data class BakongCheckResponse(
     val bakongHash: String?,
     val responseCode: Int?,
     val responseMessage: String?,
-    val expiresAt: LocalDateTime? = null
+    val expiresAt: Instant? = null
 )
 
 data class PaymentHistoryResponse(
@@ -47,7 +48,7 @@ data class PaymentHistoryResponse(
     val status: String,
     val bakongHash: String?,
     val createdAt: LocalDateTime,
-    val expiresAt: LocalDateTime,
+    val expiresAt: Instant,
     val paidAt: LocalDateTime?
 )
 
