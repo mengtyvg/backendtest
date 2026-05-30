@@ -1,0 +1,182 @@
+:root {
+  --app-sidebar: #17233c;
+  --app-sidebar-active: #30486f;
+  --app-sidebar-text: #eef3ff;
+  --app-sidebar-muted: #a7b8d3;
+  --app-background: #f4f6fa;
+  --app-panel: #ffffff;
+  --app-border: #dfe4ec;
+  --app-text: #202938;
+  --app-muted: #667085;
+  --app-primary: #2563eb;
+  --app-primary-dark: #1d4ed8;
+  --app-primary-soft: #eff6ff;
+  --app-primary-border: #bfdbfe;
+  --app-danger: #b42318;
+
+  --blue: var(--app-primary);
+  --blue-dark: var(--app-primary-dark);
+  --blue-soft: var(--app-primary-soft);
+  --blue-mid: var(--app-primary-border);
+  --green: var(--app-primary);
+  --green-dark: var(--app-primary-dark);
+  --green-soft: var(--app-primary-soft);
+  --green-mid: var(--app-primary-border);
+  --gray-50: var(--app-background);
+  --gray-200: var(--app-border);
+  --gray-500: var(--app-muted);
+  --gray-800: var(--app-text);
+  --sidebar: var(--app-sidebar);
+  --border: var(--app-border);
+}
+
+body {
+  color: var(--app-text);
+  background: var(--app-background);
+}
+
+.sidebar {
+  color: var(--app-sidebar-text);
+  background: var(--app-sidebar);
+  border-right: 0;
+}
+
+.sidebar-logo {
+  border-bottom-color: rgba(255, 255, 255, .12);
+}
+
+.sidebar-logo .brand,
+.sidebar .brand {
+  color: #fff;
+  font-size: 22px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sidebar-logo .sub,
+.sidebar .sub,
+.sidebar-section {
+  color: var(--app-sidebar-muted);
+}
+
+.sidebar-item {
+  color: var(--app-sidebar-text);
+}
+
+.sidebar-item:hover,
+.sidebar-item.active {
+  color: #fff;
+  background: var(--app-sidebar-active);
+}
+
+.sidebar-item.active {
+  border-color: transparent;
+}
+
+.sidebar-item .icon,
+.sidebar-item.active .icon {
+  color: #b8c8e4;
+}
+
+.sidebar-footer {
+  border-top-color: rgba(255, 255, 255, .12);
+}
+
+.sidebar-footer .user-info .name {
+  color: #fff;
+}
+
+.sidebar-footer .user-info .role {
+  color: var(--app-sidebar-muted);
+}
+
+.avatar,
+.sidebar-badge {
+  background: var(--app-primary);
+}
+
+.topbar {
+  background: var(--app-panel);
+  border-bottom-color: var(--app-border);
+}
+
+.card,
+.panel,
+.table-card,
+.orders-card,
+.stat-card,
+.content-card {
+  border-color: var(--app-border);
+  border-radius: 10px;
+  background: var(--app-panel);
+  box-shadow: 0 2px 8px rgba(16, 24, 40, .04);
+}
+
+button,
+.btn,
+.refresh {
+  border-radius: 6px;
+}
+
+.btn-primary,
+.refresh {
+  border-color: var(--app-primary);
+  background: var(--app-primary);
+}
+
+.btn-primary:hover,
+.refresh:hover {
+  border-color: var(--app-primary-dark);
+  background: var(--app-primary-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--app-primary);
+  outline-color: rgba(37, 99, 235, .14);
+}
+
+/* Sale and payment history use a horizontal navigation layout. */
+.topnav {
+  background: var(--app-panel);
+  border-bottom-color: var(--app-border);
+}
+
+.topnav .brand {
+  color: var(--app-primary);
+}
+
+.topnav nav a.active {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+}
+
+.cat-btn.active,
+.btn-complete-sale {
+  border-color: var(--app-primary);
+  background: var(--app-primary);
+}
+
+.item-card:hover {
+  border-color: var(--app-primary-border);
+}
+
+.item-card .iprice {
+  color: var(--app-primary);
+}
+
+/* Login is intentionally simple but uses the same panel treatment. */
+body > .card {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, .06);
+}
+
+body > .card button {
+  background: var(--app-primary);
+}
+
+body > .card button:hover {
+  background: var(--app-primary-dark);
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.replace("/login.html");
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management - POS</title>
+  <style>
+    :root {
+      --sidebar: #17233c;
+      --sidebar-active: #30486f;
+      --background: #f4f6fa;
+      --panel: #fff;
+      --border: #dfe4ec;
+      --text: #202938;
+      --muted: #667085;
+      --primary: #2563eb;
+      --danger: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; display: flex; min-height: 100vh; color: var(--text); background: var(--background); font-family: Arial, sans-serif; }
+    .sidebar { width: 230px; min-height: 100vh; color: #fff; background: var(--sidebar); }
+    .sidebar-logo { padding: 22px 18px; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+    .brand { font-size: 22px; font-weight: 700; }
+    .sub { margin-top: 4px; color: #b8c5dd; font-size: 12px; }
+    .sidebar-section { padding: 18px 16px 7px; color: #a7b8d3; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #eef3ff; font-size: 14px; text-decoration: none; }
+    .sidebar-item:hover, .sidebar-item.active { background: var(--sidebar-active); }
+    .icon { display: inline-flex; width: 30px; justify-content: center; color: #b8c8e4; font-size: 11px; font-weight: 700; }
+    .main { flex: 1; min-width: 0; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--border); background: #fff; }
+    h1, h2 { margin: 0; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 17px; }
+    p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .content { padding: 20px; }
+    .layout { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .panel { overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); box-shadow: 0 2px 8px rgba(16, 24, 40, .04); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
+    form { padding: 16px; }
+    .field { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 700; }
+    input, select { width: 100%; padding: 10px 11px; border: 1px solid #cbd2dc; border-radius: 6px; background: #fff; color: var(--text); font: inherit; }
+    input:focus, select:focus { border-color: var(--primary); outline: 2px solid rgba(37, 99, 235, .14); }
+    .checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 700; }
+    .checkbox input { width: auto; }
+    .button { padding: 9px 13px; border: 0; border-radius: 6px; color: #fff; background: var(--primary); cursor: pointer; font-weight: 700; }
+    .button:disabled { cursor: not-allowed; opacity: .55; }
+    .button.secondary { background: #475467; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+    th { color: #475467; background: #f8fafc; font-size: 12px; text-transform: uppercase; }
+    .status { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .active-status { color: #137333; background: #e8f5ec; }
+    .inactive-status { color: var(--danger); background: #fee4e2; }
+    .empty { padding: 28px 16px; color: var(--muted); text-align: center; }
+    .toast { position: fixed; right: 18px; bottom: 18px; max-width: 380px; padding: 12px 15px; border-radius: 7px; color: #fff; background: #344054; opacity: 0; transform: translateY(10px); transition: .2s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--danger); }
+    @media (max-width: 900px) { .sidebar { width: 190px; } .layout { grid-template-columns: 1fr; } }
+  </style>
+  <link rel="stylesheet" href="/css/app-theme.css" />
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">monakom</div>
+    <div class="sub">POS management</div>
+  </div>
+  <div class="sidebar-section">Operations</div>
+  <a class="sidebar-item" href="/sale.html"><span class="icon">POS</span><span>Sales</span></a>
+  <div class="sidebar-section">Master Data</div>
+  <a class="sidebar-item" href="/item.html"><span class="icon">PRD</span><span>Products</span></a>
+  <a class="sidebar-item" href="/category.html"><span class="icon">CAT</span><span>Categories</span></a>
+  <a class="sidebar-item" href="/stock.html"><span class="icon">STK</span><span>Stock Movement</span></a>
+  <a class="sidebar-item" href="/payment-method.html"><span class="icon">PAY</span><span>Payment Methods</span></a>
+  <div class="sidebar-section">System</div>
+  <a class="sidebar-item active" href="/users.html"><span class="icon">USR</span><span>Users</span></a>
+  <div class="sidebar-section">Analytics</div>
+  <a class="sidebar-item" href="/report.html"><span class="icon">RPT</span><span>Invoice Report</span></a>
+  <a class="sidebar-item" href="/salesummary.html"><span class="icon">SUM</span><span>Sale Summary</span></a>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div>
+      <h1>User Management</h1>
+      <p>Create application users and review the current user list.</p>
+    </div>
+    <button class="button secondary" type="button" onclick="logout()">Logout</button>
+  </header>
+  <div class="content">
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-header"><h2>Create User</h2></div>
+        <form id="createUserForm">
+          <div class="field"><label for="username">Username</label><input id="username" name="username" required autocomplete="off"></div>
+          <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
+          <div class="field"><label for="displayName">Display Name</label><input id="displayName" name="displayName" required></div>
+          <div class="field">
+            <label for="role">Role</label>
+            <select id="role" name="role"><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="CASHIER">Cashier</option></select>
+          </div>
+          <div class="field">
+            <label for="defaultPage">Default Page</label>
+            <select id="defaultPage" name="defaultPage"><option value="/item.html">Products</option><option value="/sale.html">Sales</option><option value="/report.html">Reports</option></select>
+          </div>
+          <label class="checkbox"><input id="status" name="status" type="checkbox" checked>Active user</label>
+          <button class="button" id="createButton" type="submit">Create User</button>
+          <p>The create action will work after you add the backend POST endpoint.</p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header"><h2>Users</h2><button class="button secondary" type="button" onclick="loadUsers()">Refresh</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Username</th><th>Display Name</th><th>Role</th><th>Default Page</th><th>Status</th><th>Created</th></tr></thead>
+            <tbody id="usersBody"><tr><td class="empty" colspan="6">Loading users...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const form = document.getElementById("createUserForm");
+  const createButton = document.getElementById("createButton");
+  const usersBody = document.getElementById("usersBody");
+  const toast = document.getElementById("toast");
+  let toastTimeout;
+
+  function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.textContent = value == null ? "" : String(value);
+    return div.innerHTML;
+  }
+
+  function showToast(message, isError = false) {
+    clearTimeout(toastTimeout);
+    toast.textContent = message;
+    toast.className = `toast show${isError ? " error" : ""}`;
+    toastTimeout = setTimeout(() => toast.className = "toast", 3500);
+  }
+
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
+    window.location.replace("/login.html");
+  }
+
+  async function parseError(response) {
+    try {
+      const body = await response.json();
+      return body.detail || body.message || body.error || "Request failed.";
+    } catch {
+      return "Request failed.";
+    }
+  }
+
+  function renderUsers(users) {
+    if (!users.length) {
+      usersBody.innerHTML = '<tr><td class="empty" colspan="6">No users found.</td></tr>';
+      return;
+    }
+    usersBody.innerHTML = users.map(user => `
+      <tr>
+        <td>${escapeHtml(user.username)}</td>
+        <td>${escapeHtml(user.displayName)}</td>
+        <td>${escapeHtml(user.role)}</td>
+        <td>${escapeHtml(user.defaultPage || "-")}</td>
+        <td><span class="status ${user.status ? "active-status" : "inactive-status"}">${user.status ? "Active" : "Inactive"}</span></td>
+        <td>${escapeHtml(user.dateCreated ? new Date(user.dateCreated).toLocaleString() : "-")}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadUsers() {
+    try {
+      const response = await fetch("/api/users");
+      if (!response.ok) throw new Error(await parseError(response));
+      renderUsers(await response.json());
+    } catch (error) {
+      usersBody.innerHTML = '<tr><td class="empty" colspan="6">Unable to load users.</td></tr>';
+      showToast(error.message, true);
+    }
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    createButton.disabled = true;
+    const payload = {
+      username: form.username.value.trim(),
+      password: form.password.value,
+      displayName: form.displayName.value.trim(),
+      role: form.role.value,
+      defaultPage: form.defaultPage.value,
+      status: form.status.checked
+    };
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(await parseError(response));
+      form.reset();
+      form.status.checked = true;
+      await loadUsers();
+      showToast("User created.");
+    } catch (error) {
+      showToast(error.message, true);
+    } finally {
+      createButton.disabled = false;
+    }
+  });
+
+  loadUsers();
+</script>
+</body>
+</html>

@@ -6,4 +6,5 @@ import java.util.UUID
 
 interface AppUserRepository : JpaRepository<AppUser, UUID> {
     fun findByUsernameAndStatusTrue(username: String): AppUser?
+    fun existsByUsernameIgnoreCase(username: String): Boolean
 }

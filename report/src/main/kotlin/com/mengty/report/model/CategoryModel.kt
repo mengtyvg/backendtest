@@ -11,5 +11,7 @@ data class Category(
     @Id
     val id: UUID,
 
-    val name: String = ""
+    val name: String = "",
+
+    val status: Boolean = true
 )

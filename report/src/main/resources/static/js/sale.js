@@ -377,7 +377,7 @@
         const seen = new Set();
         categories = data.filter(category => {
           const name = (category.name || "").trim();
-          if (!name || seen.has(name)) {
+          if (category.status === false || !name || seen.has(name)) {
             return false;
           }
           seen.add(name);

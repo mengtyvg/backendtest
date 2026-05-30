@@ -28,6 +28,42 @@ class AppUserService(
         return toDTO(user)
     }
 
+    fun createUser(
+        username: String,
+        password: String,
+        displayName: String,
+        role: String,
+        defaultPage: String,
+        status: Boolean
+    ): AppUserDTO {
+        val cleanUsername = username.trim()
+        val cleanDisplayName = displayName.trim()
+
+        if (cleanUsername.isBlank() || password.isBlank() || cleanDisplayName.isBlank()) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Username, password, and display name are required."
+            )
+        }
+
+        if (appUserRepository.existsByUsernameIgnoreCase(cleanUsername)) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Username already exists.")
+        }
+
+        return toDTO(
+            appUserRepository.save(
+                AppUser(
+                    username = cleanUsername,
+                    passwordHash = requireNotNull(passwordEncoder.encode(password)),
+                    displayName = cleanDisplayName,
+                    role = role.trim(),
+                    defaultPage = defaultPage.trim(),
+                    status = status
+                )
+            )
+        )
+    }
+
     private fun invalidCredentials() =
         ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password.")
 

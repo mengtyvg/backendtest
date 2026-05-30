@@ -9,6 +9,8 @@ import java.util.UUID
 @Repository
 interface ItemRepository : JpaRepository<Item, UUID> {
 
+    fun countByCategoryId(categoryId: UUID): Long
+
     fun findByItemCode(itemCode: String): Item?
 
     fun findByItemCodeAndStatusTrue(itemCode: String): Item?

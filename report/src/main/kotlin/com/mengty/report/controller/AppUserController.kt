@@ -1,8 +1,11 @@
 package com.mengty.report.controller
 
 import com.mengty.report.dto.AppUserDTO
+import com.mengty.report.dto.CreateAppUserRequest
 import com.mengty.report.service.AppUserService
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
@@ -18,6 +21,19 @@ class AppUserController(
         return appUserService.getUsers()
     }
 
+    @PostMapping
+    fun createUser(@RequestBody request: CreateAppUserRequest): AppUserDTO {
+        return appUserService.createUser(
+            request.username,
+            request.password,
+            request.displayName,
+            request.role,
+            request.defaultPage,
+            request.status
+        )
+    }
+
+
     @GetMapping("/login")
     fun login(
         @RequestParam username: String,
@@ -25,4 +41,6 @@ class AppUserController(
     ): AppUserDTO {
         return appUserService.login(username.trim(), password)
     }
+
+
 }

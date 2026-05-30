@@ -10,19 +10,23 @@ import com.mengty.report.repository.CategoryRepository
 import com.mengty.report.repository.ItemRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.util.UUID
 
 @Service
+@Transactional
 class MasterService(
     private val categoryRepo: CategoryRepository,
     private val itemRepo: ItemRepository,
     private val itemVariantRepo: ItemVariantRepository
 ) {
 
+
+
     fun getAllCategories(): List<Category> {
-        return categoryRepo.findAll()
+        return categoryRepo.findAll().map(::synchronizeCategoryStatus)
     }
 
     fun getAllItems(): List<Item> {
@@ -95,6 +99,8 @@ class MasterService(
             )
         )
 
+        savedItem.categoryId?.let(::synchronizeCategoryStatus)
+
         // 3. return item
         return savedItem
     }
@@ -138,6 +144,9 @@ class MasterService(
             )
         }
 
+        setOfNotNull(existing.categoryId, savedItem.categoryId)
+            .forEach(::synchronizeCategoryStatus)
+
         return savedItem
     }
 
@@ -152,9 +161,24 @@ class MasterService(
     fun deleteItem(itemCode: String) {
         val existing = getItemByCode(itemCode)
         itemRepo.delete(existing)
+        itemRepo.flush()
+        existing.categoryId?.let(::synchronizeCategoryStatus)
     }
 
+    private fun synchronizeCategoryStatus(categoryId: UUID): Category {
+        val category = categoryRepo.findById(categoryId)
+            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found.") }
 
+        return synchronizeCategoryStatus(category)
+    }
 
+    private fun synchronizeCategoryStatus(category: Category): Category {
+        val shouldBeActive = itemRepo.countByCategoryId(category.id) > 0
 
+        return if (category.status == shouldBeActive) {
+            category
+        } else {
+            categoryRepo.save(category.copy(status = shouldBeActive))
+        }
+    }
 }

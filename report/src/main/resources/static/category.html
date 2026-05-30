@@ -443,6 +443,24 @@
       text-align: center;
     }
 
+    .status-badge {
+      display: inline-flex;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-badge.active {
+      color: #137333;
+      background: #e8f5ec;
+    }
+
+    .status-badge.inactive {
+      color: #b42318;
+      background: #fee4e2;
+    }
+
     .btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
@@ -514,6 +532,7 @@
       .page-header { flex-direction: column; }
     }
   </style>
+  <link rel="stylesheet" href="/css/app-theme.css" />
 </head>
 <body>
 <aside class="sidebar">
@@ -530,6 +549,9 @@
   <a class="sidebar-item active" href="/category.html"><span class="icon">CAT</span><span>Categories</span><span class="sidebar-badge" id="sidebarCount">0</span></a>
   <a class="sidebar-item" href="/stock.html"><span class="icon">STK</span><span>Stock Movement</span></a>
   <a class="sidebar-item" href="/payment-method.html"><span class="icon">PAY</span><span>Payment Methods</span></a>
+
+  <div class="sidebar-section">System</div>
+  <a class="sidebar-item" href="/users.html"><span class="icon">USR</span><span>Users</span></a>
 
   <div class="sidebar-section">Analytics</div>
   <a class="sidebar-item" href="/report.html"><span class="icon">RPT</span><span>Reports</span></a>
@@ -607,6 +629,7 @@
         <tr>
           <th style="width: 140px;">Category ID</th>
           <th>Name</th>
+          <th style="width: 110px;">Status</th>
           <th style="width: 180px;">Reference</th>
         </tr>
         </thead>
@@ -678,7 +701,7 @@
   function renderEmpty(message, detail) {
     document.getElementById("categoryBody").innerHTML = `
       <tr>
-        <td colspan="3">
+        <td colspan="4">
           <div class="empty-state">
             <div class="empty-title">${message}</div>
             <div class="empty-sub">${detail}</div>
@@ -713,6 +736,7 @@
           <div class="category-name">${category.name || "-"}</div>
           <div class="category-meta">Category ${String(start + index + 1).padStart(2, "0")} in current result set</div>
         </td>
+        <td><span class="status-badge ${category.status ? "active" : "inactive"}">${category.status ? "Active" : "Inactive"}</span></td>
         <td><span class="mono">CAT-${String(category.id ?? index + 1).padStart(4, "0")}</span></td>
       </tr>
     `).join("");
