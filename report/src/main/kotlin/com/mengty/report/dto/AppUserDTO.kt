@@ -1,6 +1,5 @@
 package com.mengty.report.dto
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -9,6 +8,7 @@ data class AppUserDTO(
     val username: String,
     val displayName: String,
     val role: String,
+    val defaultPage: String,
     val status: Boolean,
     val dateCreated: LocalDateTime
 )

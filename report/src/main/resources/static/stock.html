@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    if (localStorage.getItem("isLoggedIn") !== "true") {
-      window.location.replace("/login.html");
-    }
-  </script>
+  <script src="/js/auth.js"></script>
+  <script>requirePageAccess();</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stock Movement - POS</title>
@@ -706,7 +703,7 @@
   let movementType = "IN";
 
   function logout() {
-    localStorage.removeItem("isLoggedIn");
+    clearFrontendSession();
     window.location.href = "/login.html";
   }
 

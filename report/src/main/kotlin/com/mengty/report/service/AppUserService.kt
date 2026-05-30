@@ -73,6 +73,7 @@ class AppUserService(
             user.username,
             user.displayName,
             user.role,
+            user.defaultPage,
             user.status,
             user.dateCreated
         )

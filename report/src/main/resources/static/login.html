@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Login</title>
+    <script src="/js/auth.js"></script>
     <style>
         body {
           margin: 0;
@@ -124,7 +125,7 @@
 
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", JSON.stringify(user));
-        window.location.href = "/item.html";
+        redirectAfterLogin(user);
       } catch (error) {
         console.error(error);
         showError(error.message || "Unable to log in.");
