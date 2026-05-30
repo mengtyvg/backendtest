@@ -30,6 +30,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.security:spring-security-crypto")
 	implementation("kh.gov.nbc.bakong_khqr:sdk-java:1.0.0.16")
 	implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")

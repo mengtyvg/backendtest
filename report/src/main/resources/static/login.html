@@ -61,26 +61,82 @@
 <div class="card">
     <h2>Login</h2>
 
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
+    <input id="username" placeholder="Username" autocomplete="username">
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password">
 
-    <button onclick="login()">Login</button>
+    <button id="loginButton" onclick="login()">Login</button>
 
-    <div id="error" class="error">Invalid username or password</div>
+    <div id="error" class="error"></div>
 </div>
 
 <script>
-    function login() {
-      const username = document.getElementById("username").value;
+    function showError(message) {
+      const error = document.getElementById("error");
+      error.textContent = message;
+      error.style.display = "block";
+    }
+
+    function hideError() {
+      document.getElementById("error").style.display = "none";
+    }
+
+    function setLoading(loading) {
+      const button = document.getElementById("loginButton");
+      button.disabled = loading;
+      button.textContent = loading ? "Logging in..." : "Login";
+    }
+
+    async function login() {
+      const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
 
-      if (username === "admin" && password === "123") {
+      hideError();
+      if (!username || !password) {
+        showError("Please enter your username and password.");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/users/login?username=${encodeURIComponent(username)}`, {
+          method: "GET",
+          headers: {
+            "X-Password": password
+          }
+        });
+
+        if (!res.ok) {
+          let message = "Invalid username or password.";
+          try {
+            const errorBody = await res.json();
+            message = errorBody.detail || errorBody.message || message;
+          } catch (_) {
+            // Keep the generic login error when the backend has no JSON body.
+          }
+          throw new Error(message);
+        }
+
+        const user = await res.json();
+        if (!user || !user.id || user.status !== true) {
+          throw new Error("This user account is inactive.");
+        }
+
         localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("currentUser", JSON.stringify(user));
         window.location.href = "/item.html";
-      } else {
-        document.getElementById("error").style.display = "block";
+      } catch (error) {
+        console.error(error);
+        showError(error.message || "Unable to log in.");
+      } finally {
+        setLoading(false);
       }
     }
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        login();
+      }
+    });
 </script>
 
 </body>

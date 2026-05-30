@@ -229,7 +229,7 @@ class PaymentService(
     ): KhqrPayment {
         val merchantInfo = MerchantInfo().apply {
             bakongAccountId = merchantAccount
-            merchantName = "Mengty x POOH"
+            merchantName = "SOVANN MENGTY TEST BAKONG"
             merchantCity = "PHNOM PENH"
             merchantId = "MENGTY"
             acquiringBank = "Bakong"

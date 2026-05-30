@@ -441,19 +441,34 @@
           )
         );
 
-      grid.innerHTML = filtered.map(i => `
-        <div class="item-card" onclick='addToCart(${JSON.stringify(i)})'>
+      grid.innerHTML = filtered.map(i => {
+        const stockQuantity = Number(i.stockQuantity || 0);
+        const isOutOfStock = stockQuantity <= 0;
+        return `
+        <div class="item-card${isOutOfStock ? " out-of-stock" : ""}" onclick='addToCart(${JSON.stringify(i)})'>
           <img src="${imgSrc(i.imageUrl)}" alt="${i.itemName || "Product"}" onerror="this.src='https://placehold.co/300x180?text=No+Image'">
+          ${isOutOfStock ? `<div class="stock-warning">0 stock</div>` : ""}
           <div class="iname">${i.itemName || "-"}</div>
           <div class="icategory">${i.mengtyName || "-"}</div>
           <div class="iprice">$${Number(i.itemPrice || 0).toFixed(2)}</div>
         </div>
-      `).join("") || `<div style="padding:24px 16px;text-align:center;color:#9ca3af;font-size:12px">No items found</div>`;
+      `;
+      }).join("") || `<div style="padding:24px 16px;text-align:center;color:#9ca3af;font-size:12px">No items found</div>`;
     }
 
     function addToCart(item) {
+      const stockQuantity = Number(item.stockQuantity || 0);
+      if (stockQuantity <= 0) {
+        showToast("warning", "0 Stock", `${item.itemName || "Item"} is out of stock.`);
+        return;
+      }
+
       const found = cart.find(c => c.itemCode === item.itemCode);
       if (found) {
+        if (found.qty >= found.stockQuantity) {
+          showToast("warning", "Not Enough Stock", `Only ${found.stockQuantity} ${found.itemName || "item"} available.`);
+          return;
+        }
         found.qty++;
       } else {
         cart.push({
@@ -463,6 +478,7 @@
           mengtyName: item.mengtyName,
           imageUrl: item.imageUrl,
           price: Number(item.itemPrice || 0),
+          stockQuantity,
           qty: 1
         });
       }
@@ -496,6 +512,10 @@
     function plusQty(code) {
       const item = cart.find(i => i.itemCode === code);
       if (item) {
+        if (item.qty >= item.stockQuantity) {
+          showToast("warning", "Not Enough Stock", `Only ${item.stockQuantity} ${item.itemName || "item"} available.`);
+          return;
+        }
         item.qty++;
         renderCart();
       }
@@ -864,6 +884,7 @@
         showSaleCompleteModal(lastCompletedSale);
         cart = [];
         renderCart();
+        await loadItems();
       } finally {
         isSubmittingSale = false;
         setCompleteSaleLoading(false);
@@ -873,6 +894,12 @@
     async function completeSale() {
       if (cart.length === 0) {
         showToast("warning", "Empty Cart", "Please add an item first.");
+        return;
+      }
+
+      const unavailableItem = cart.find(item => item.stockQuantity <= 0 || item.qty > item.stockQuantity);
+      if (unavailableItem) {
+        showToast("warning", "Not Enough Stock", `${unavailableItem.itemName || "Item"} only has ${unavailableItem.stockQuantity} stock available.`);
         return;
       }
 
