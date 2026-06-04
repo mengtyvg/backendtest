@@ -22,7 +22,12 @@ data class CreatePaymentResponse(
     val khqr: String,
     val md5: String,
     val status: String,
-    val expiresAt: Instant
+    val expiresAt: Instant,
+    val qrImage: String? = null,
+    val deeplink: String? = null,
+    val checkoutUrl: String? = null,
+    val checkoutSessionId: String? = null,
+    val iframeSnippet: String? = null
 )
 
 data class PaymentStatusResponse(

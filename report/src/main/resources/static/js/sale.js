@@ -170,7 +170,7 @@
         document.getElementById("detailItemCount").textContent = String(items.length);
         renderVoidDetails(detail);
         if (voidButton) {
-          const canVoid = detail.status === "Completed";
+          const canVoid = getCurrentRole() === "ADMIN" && detail.status === "Completed";
           voidButton.hidden = !canVoid;
           voidButton.disabled = !canVoid;
         }
@@ -712,9 +712,32 @@
       document.getElementById("bakongPaymentAmount").textContent =
         "$" + Number(payment.amount || getTotal()).toFixed(2);
       document.getElementById("bakongPaymentReference").textContent = `Payment reference #${payment.paymentId}`;
-      document.getElementById("bakongQrImage").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=12&data=" +
-        encodeURIComponent(payment.khqr || "");
+      const checkoutFrameWrap = document.getElementById("bakongCheckoutFrameWrap");
+      const checkoutFrame = document.getElementById("bakongCheckoutFrame");
+      const qrWrap = document.getElementById("bakongQrWrap");
+      const scanLabel = document.getElementById("bakongScanLabel");
+      if (payment.checkoutUrl) {
+        checkoutFrame.src = payment.checkoutUrl;
+        checkoutFrameWrap.classList.add("show");
+        qrWrap.classList.remove("show");
+        scanLabel.textContent = "Complete payment in the Bakong Relay checkout";
+      } else {
+        checkoutFrame.removeAttribute("src");
+        checkoutFrameWrap.classList.remove("show");
+        qrWrap.classList.add("show");
+        document.getElementById("bakongQrImage").src = payment.qrImage ||
+          "https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=12&data=" +
+          encodeURIComponent(payment.khqr || "");
+        scanLabel.textContent = "Scan with Bakong or any KHQR-supported banking app";
+      }
+      const deeplink = document.getElementById("bakongDeeplink");
+      if (payment.deeplink) {
+        deeplink.href = payment.deeplink;
+        deeplink.classList.add("show");
+      } else {
+        deeplink.removeAttribute("href");
+        deeplink.classList.remove("show");
+      }
       setBakongStatus("Pending", "");
       updateBakongExpiry();
       document.getElementById("bakongPaymentModal").classList.add("show");
@@ -725,6 +748,7 @@
       stopBakongPolling();
       currentBakongPayment = null;
       setCompleteSaleLoading(false);
+      document.getElementById("bakongCheckoutFrame").removeAttribute("src");
       document.getElementById("bakongPaymentModal").classList.remove("show");
     }
 

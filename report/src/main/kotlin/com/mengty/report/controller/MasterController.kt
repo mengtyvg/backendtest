@@ -3,6 +3,8 @@ package com.mengty.report.controller
 
 
 import org.springframework.web.bind.annotation.*
+import com.mengty.report.config.AppRole
+import com.mengty.report.config.RequireRoles
 import com.mengty.report.dto.ItemRequest
 import com.mengty.report.dto.ItemWithPriceDTO
 import com.mengty.report.model.Category
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/master")
 @CrossOrigin("*")
+@RequireRoles(AppRole.ADMIN, AppRole.MANAGER, AppRole.CASHIER)
 class MasterController(
     private val masterService: MasterService
 ) {
@@ -43,6 +46,7 @@ class MasterController(
     }
 
     @PostMapping("/items")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun createItem(@RequestBody request: ItemRequest): Item {
         return masterService.createItem(request)
     }
@@ -55,6 +59,7 @@ class MasterController(
 
 
     @PutMapping("/items/{itemCode}")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun updateItem(
         @PathVariable itemCode: String,
         @RequestBody request: ItemRequest
@@ -63,6 +68,7 @@ class MasterController(
     }
 
     @DeleteMapping("/items/{itemCode}")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun deleteItem(@PathVariable itemCode: String): String {
         masterService.deleteItem(itemCode)
         return "Item deleted successfully"

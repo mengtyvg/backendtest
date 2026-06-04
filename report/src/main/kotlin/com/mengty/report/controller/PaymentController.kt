@@ -5,11 +5,14 @@ import com.mengty.report.dto.CreatePaymentResponse
 import com.mengty.report.dto.BakongCheckResponse
 import com.mengty.report.dto.PaymentHistoryResponse
 import com.mengty.report.dto.PaymentStatusResponse
+import com.mengty.report.config.AppRole
+import com.mengty.report.config.RequireRoles
 import com.mengty.report.service.PaymentService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/payments")
+@RequireRoles(AppRole.ADMIN, AppRole.MANAGER, AppRole.CASHIER)
 class PaymentController(
         private val paymentService: PaymentService
 ) {

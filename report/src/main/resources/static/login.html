@@ -100,11 +100,12 @@
 
       setLoading(true);
       try {
-        const res = await fetch(`/api/users/login?username=${encodeURIComponent(username)}`, {
-          method: "GET",
+        const res = await fetch("/api/users/login", {
+          method: "POST",
           headers: {
-            "X-Password": password
-          }
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, password })
         });
 
         if (!res.ok) {
@@ -118,13 +119,19 @@
           throw new Error(message);
         }
 
-        const user = await res.json();
+        const session = await res.json();
+        const user = session.user;
         if (!user || !user.id || user.status !== true) {
           throw new Error("This user account is inactive.");
+        }
+        if (!session.accessToken) {
+          throw new Error("The server did not return an access token.");
         }
 
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", JSON.stringify(user));
+        localStorage.setItem("accessToken", session.accessToken);
+        localStorage.setItem("accessTokenExpiresAt", session.expiresAt || "");
         redirectAfterLogin(user);
       } catch (error) {
         console.error(error);

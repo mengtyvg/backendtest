@@ -3,6 +3,8 @@ package com.mengty.report.controller
 import com.mengty.report.dto.ReportResponse
 import com.mengty.report.dto.SaleSummaryResponse
 import com.mengty.report.dto.testReportResponse
+import com.mengty.report.config.AppRole
+import com.mengty.report.config.RequireRoles
 import com.mengty.report.service.ReportService
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,6 +16,7 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/api/reports")
 @CrossOrigin(origins = ["*"])
+@RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
 class ReportController(
     private val reportService: ReportService
 ) {

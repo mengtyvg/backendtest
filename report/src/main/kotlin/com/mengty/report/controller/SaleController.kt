@@ -1,6 +1,8 @@
 package com.mengty.report.controller
 
 import com.mengty.report.dto.CreatePaymentMethodRequest
+import com.mengty.report.config.AppRole
+import com.mengty.report.config.RequireRoles
 import com.mengty.report.dto.SaleCompleteRequest
 import com.mengty.report.dto.SaleCompleteResponse
 import com.mengty.report.dto.PaymentMethodStatusRequest
@@ -22,6 +24,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/sale")
 @CrossOrigin("*")
+@RequireRoles(AppRole.ADMIN, AppRole.MANAGER, AppRole.CASHIER)
 class SaleController(
     private val saleService: SaleService
 ) {
@@ -32,11 +35,13 @@ class SaleController(
     }
 
     @GetMapping("/payment-methods/all")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun getAllPaymentMethods(): List<PosPaymentMethod> {
         return saleService.getAllPaymentMethods()
     }
 
     @PostMapping("/payment-methods")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun createPaymentMethod(@RequestBody request: CreatePaymentMethodRequest): PosPaymentMethod {
         return saleService.createPaymentMethod(request)
     }
@@ -52,6 +57,7 @@ class SaleController(
     }
 
     @PutMapping("/payment-methods/{id}/status")
+    @RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
     fun updatePaymentMethodStatus(
         @PathVariable id: UUID,
         @RequestBody request: PaymentMethodStatusRequest
@@ -65,6 +71,7 @@ class SaleController(
     }
 
     @PutMapping("/orders/{invoiceId}/void")
+    @RequireRoles(AppRole.ADMIN)
     fun voidInvoice(
         @PathVariable invoiceId: UUID,
         @RequestBody request: VoidInvoiceRequest

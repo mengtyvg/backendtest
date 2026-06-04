@@ -1,6 +1,8 @@
 package com.mengty.report.controller
 
 import com.mengty.report.dto.CreateStockMovementRequest
+import com.mengty.report.config.AppRole
+import com.mengty.report.config.RequireRoles
 import com.mengty.report.model.InventoryStockBalanceModel
 import com.mengty.report.model.InventoryStockMovementModel
 import com.mengty.report.service.InventoryService
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/inventory")
 @CrossOrigin("*")
+@RequireRoles(AppRole.ADMIN, AppRole.MANAGER)
 class InventoryController(
     private val inventoryService: InventoryService
 ) {

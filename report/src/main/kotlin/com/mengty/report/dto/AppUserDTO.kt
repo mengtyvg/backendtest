@@ -21,3 +21,14 @@ data class CreateAppUserRequest(
     val defaultPage: String,
     val status: Boolean
 )
+
+data class LoginRequest(
+    val username: String,
+    val password: String
+)
+
+data class LoginResponse(
+    val accessToken: String,
+    val expiresAt: LocalDateTime,
+    val user: AppUserDTO
+)

@@ -1,6 +1,7 @@
 package com.mengty.report.service
 
 import com.mengty.report.dto.AppUserDTO
+import com.mengty.report.dto.LoginResponse
 import com.mengty.report.model.AppUser
 import com.mengty.report.repository.AppUserRepository
 import org.springframework.http.HttpStatus
@@ -10,14 +11,15 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class AppUserService(
-    private val appUserRepository: AppUserRepository
+    private val appUserRepository: AppUserRepository,
+    private val jwtService: JwtService
 ) {
     private val passwordEncoder = BCryptPasswordEncoder()
 
     fun getUsers() =
         appUserRepository.findAll().map(::toDTO)
 
-    fun login(username: String, password: String): AppUserDTO {
+    fun login(username: String, password: String): LoginResponse {
         val user = appUserRepository.findByUsernameAndStatusTrue(username)
             ?: throw invalidCredentials()
 
@@ -25,7 +27,7 @@ class AppUserService(
             throw invalidCredentials()
         }
 
-        return toDTO(user)
+        return jwtService.createToken(toDTO(user))
     }
 
     fun createUser(

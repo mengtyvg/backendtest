@@ -261,8 +261,8 @@
         <div class="bakong-card-head">
             <div class="bakong-brand-row">
                 <div class="bakong-brand">
-                    <span class="bakong-logo">KHQR</span>
-                    <span>Bakong</span>
+                    <span class="bakong-logo">RBK</span>
+                    <span>Bakong Relay Checkout</span>
                 </div>
                 <button class="modal-close bakong-close" type="button" onclick="closeBakongPaymentModal()" aria-label="Close">x</button>
             </div>
@@ -279,10 +279,14 @@
             <div class="bakong-status" id="bakongPaymentStatus">Pending</div>
         </div>
         <div class="sale-modal-body">
-            <div class="bakong-qr-wrap">
+            <div class="bakong-checkout-frame-wrap" id="bakongCheckoutFrameWrap">
+                <iframe id="bakongCheckoutFrame" class="bakong-checkout-frame" title="Bakong Relay Checkout" allow="clipboard-write"></iframe>
+            </div>
+            <div class="bakong-qr-wrap" id="bakongQrWrap">
                 <img id="bakongQrImage" class="bakong-qr-image" alt="Bakong payment QR">
             </div>
-            <div class="bakong-scan-label">Scan with Bakong or any KHQR-supported banking app</div>
+            <a class="bakong-deeplink" id="bakongDeeplink" href="#" target="_blank" rel="noopener">Open Bakong App</a>
+            <div class="bakong-scan-label" id="bakongScanLabel">Complete payment in the Bakong Relay checkout</div>
             <div class="bakong-reference" id="bakongPaymentReference">Payment reference -</div>
             <div class="bakong-expiry" id="bakongPaymentExpiry">Expires in --:--</div>
         </div>
